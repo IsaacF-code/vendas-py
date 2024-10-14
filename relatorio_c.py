@@ -24,13 +24,36 @@ mes_selecionado = st.sidebar.selectbox(
 )
 
 # Filtrar por mês selecionado
-vendas_filtradas = base_vendas[base_vendas['Date'].dt.to_period('M').astype(str) == mes_selecionado]
+# vendas_filtradas = base_vendas[base_vendas['Date'].dt.to_period('M').astype(str) == mes_selecionado]
+# st.write(vendas_filtradas)
 
-base_vendas['Total'] = base_vendas['Date'].dt.to_period('M')
+col1, col2 = st.columns(2)
 
-vendas_por_mes = base_vendas.groupby('Total')
+# Agrupa a coluna de Data e Cidade, junto com a coluna Total
+venda_data_cidade = base_vendas.groupby(['Date', 'City']).agg({'Total': 'sum'}).reset_index()
 
-st.bar_chart(vendas_por_mes)
+# Filtra por mês selecionado
+venda_mes = venda_data_cidade[venda_data_cidade['Date'].dt.to_period('M').astype(str) == mes_selecionado]
+
+with col1:
+    st.write("Faturamento por dia")
+    st.bar_chart(venda_mes, x='Date', y='Total', color='City')
+
+
+venda_tipo_produto = base_vendas.groupby(['Date', 'Product line', 'City']).agg({'Total': 'sum'}).reset_index()
+
+venda_produto_mes = venda_tipo_produto[venda_tipo_produto['Date'].dt.to_period('M').astype(str) == mes_selecionado]
+
+with col2:
+    st.write("Faturamento por tipo de produto")
+    st.bar_chart(venda_produto_mes, x='Product line', y='Total', color='City', horizontal=True)
+
+
+# base_vendas['Total'] = base_vendas['Date'].dt.to_period('M')
+
+# vendas_por_mes = base_vendas.groupby('Total')
+
+# st.bar_chart(vendas_por_mes)
 
 # st.write(vendas_filtradas)
 
