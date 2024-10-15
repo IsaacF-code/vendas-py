@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib as plt
 
 
 # Carregar CSV
@@ -27,7 +28,7 @@ mes_selecionado = st.sidebar.selectbox(
 # vendas_filtradas = base_vendas[base_vendas['Date'].dt.to_period('M').astype(str) == mes_selecionado]
 # st.write(vendas_filtradas)
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(gap="medium", spec=2)
 
 # Agrupa a coluna de Data e Cidade, junto com a coluna Total
 venda_data_cidade = base_vendas.groupby(['Date', 'City']).agg({'Total': 'sum'}).reset_index()
@@ -47,6 +48,23 @@ venda_produto_mes = venda_tipo_produto[venda_tipo_produto['Date'].dt.to_period('
 with col2:
     st.write("Faturamento por tipo de produto")
     st.bar_chart(venda_produto_mes, x='Product line', y='Total', color='City', horizontal=True)
+
+col3, col4, col5 = st.columns(3)
+
+with col3:
+    st.write("Faturamento por cidade")
+    st.bar_chart(venda_mes, x='City', y='Total')
+
+# exemplo de gráfico pizza
+# data = pd.DataFrame({
+#     "Categoria": ['A', 'B', 'C', 'D'],
+#     "Valores": [25, 30, 15, 20]
+# })
+
+# st.title("Gráfico de pizza")
+# plt.pie(data['Valores'], labels=data['Categoria'])
+
+# st.pyplot()
 
 
 # base_vendas['Total'] = base_vendas['Date'].dt.to_period('M')
