@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib as plt
+import plotly.express as px
 
 
 # Carregar CSV
@@ -24,10 +24,6 @@ mes_selecionado = st.sidebar.selectbox(
     placeholder="Selecione o mês"
 )
 
-# Filtrar por mês selecionado
-# vendas_filtradas = base_vendas[base_vendas['Date'].dt.to_period('M').astype(str) == mes_selecionado]
-# st.write(vendas_filtradas)
-
 col1, col2 = st.columns(gap="medium", spec=2)
 
 # Agrupa a coluna de Data e Cidade, junto com a coluna Total
@@ -40,7 +36,7 @@ with col1:
     st.write("Faturamento por dia")
     st.bar_chart(venda_mes, x='Date', y='Total', color='City')
 
-
+# Agrupa produto e cidade
 venda_tipo_produto = base_vendas.groupby(['Date', 'Product line', 'City']).agg({'Total': 'sum'}).reset_index()
 
 venda_produto_mes = venda_tipo_produto[venda_tipo_produto['Date'].dt.to_period('M').astype(str) == mes_selecionado]
@@ -49,31 +45,29 @@ with col2:
     st.write("Faturamento por tipo de produto")
     st.bar_chart(venda_produto_mes, x='Product line', y='Total', color='City', horizontal=True)
 
-col3, col4, col5 = st.columns(3)
+col3, col4, col5 = st.columns(gap='medium', spec=3)
 
 with col3:
     st.write("Faturamento por cidade")
     st.bar_chart(venda_mes, x='City', y='Total')
 
-# exemplo de gráfico pizza
-# data = pd.DataFrame({
-#     "Categoria": ['A', 'B', 'C', 'D'],
-#     "Valores": [25, 30, 15, 20]
-# })
+# Tipo de pagamento com base no período    
+tipo_pagamento = base_vendas[base_vendas['Date'].dt.to_period('M').astype(str) == mes_selecionado]
 
-# st.title("Gráfico de pizza")
-# plt.pie(data['Valores'], labels=data['Categoria'])
-
-# st.pyplot()
+# Soma os valores individuais de cada tipo de pagamento
+pagamento = tipo_pagamento.groupby('Payment').agg({'Total': 'sum'}).reset_index()
 
 
-# base_vendas['Total'] = base_vendas['Date'].dt.to_period('M')
+with col4:
+    fig1 = px.pie(values=pagamento['Total'], names=pagamento['Payment'], title='Gráfico de Pizza')
+    st.plotly_chart(fig1)
 
-# vendas_por_mes = base_vendas.groupby('Total')
+# Agrupa as Cidades e faz a soma da coluna Rating
+aval_media = base_vendas.groupby(['Date', 'City']).agg({'Rating': 'sum'}).reset_index()
 
-# st.bar_chart(vendas_por_mes)
+aval_prod = aval_media[aval_media['Date'].dt.to_period('M').astype(str) == mes_selecionado]
 
-# st.write(vendas_filtradas)
+with col5:
+    st.write('Avaliação Média')
+    st.bar_chart(aval_prod, x='City', y='Rating')
 
-
-# st.sidebar.page_link("relatorio.py", label="Vendas", icon="💰")
